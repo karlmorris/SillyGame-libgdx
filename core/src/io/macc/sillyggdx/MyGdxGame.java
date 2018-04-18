@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Matrix4;
 
 public class MyGdxGame extends ApplicationAdapter {
 	SpriteBatch batch;
@@ -31,6 +32,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		updateEnemyXandY();
+		updateMyLocation();
 		batch.begin();
 		batch.draw(img, x, y);
 		batch.draw(player, myX, myY);
@@ -43,23 +45,27 @@ public class MyGdxGame extends ApplicationAdapter {
 		img.dispose();
 	}
 
-	public void updateMyLocation(float[] values) {
-		int multiplier = 1;
+	public void updateMyLocation() {
 
-		if (values[2] > 0) {
-			if (myY + mySize - (int) (Math.abs(values[2]) * multiplier) > 0)
-				myY = myY + (int) (Math.abs(values[2]) * multiplier);
+		Matrix4 matrix = new Matrix4();
+		Gdx.input.getRotationMatrix(matrix.val);
+
+		int multiplier = 20;
+
+		if (matrix.val[2] > 0) {
+			if (myY + mySize - (int) (Math.abs(matrix.val[2]) * multiplier) > 0)
+				myY = myY + (int) (Math.abs(matrix.val[2]) * multiplier);
 		} else {
-			if (myY - (int) (Math.abs(values[2]) * multiplier) + mySize < canvasHeight)
-				myY = myY - (int) (Math.abs(values[2]) * multiplier);
+			if (myY - (int) (Math.abs(matrix.val[2]) * multiplier) + mySize < canvasHeight)
+				myY = myY - (int) (Math.abs(matrix.val[2]) * multiplier);
 		}
 
-		if (values[1] > 0) {
-			if (myX - (int) (Math.abs(values[1]) * multiplier) - mySize > 0)
-				myX = myX - (int) (Math.abs(values[1]) * multiplier);
+		if (matrix.val[9] < 0) {
+			if (myX - (int) (Math.abs(matrix.val[9]) * multiplier) - mySize > 0)
+				myX = myX - (int) (Math.abs(matrix.val[9]) * multiplier);
 		} else {
-			if (myX + (int) (Math.abs(values[1]) * multiplier) + mySize < canvasWidth)
-				myX = myX + (int) (Math.abs(values[1]) * multiplier);
+			if (myX + (int) (Math.abs(matrix.val[9]) * multiplier) + mySize < canvasWidth)
+				myX = myX + (int) (Math.abs(matrix.val[9]) * multiplier);
 		}
 	}
 
