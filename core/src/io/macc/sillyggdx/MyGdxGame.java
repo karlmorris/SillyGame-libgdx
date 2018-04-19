@@ -4,12 +4,17 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Rectangle;
 
 public class MyGdxGame extends ApplicationAdapter {
 	SpriteBatch batch;
+	Sprite enemy, me;
 	Texture img, player;
+
+	Rectangle myArea, enemyArea;
 
 	int x,y, myX, myY, mySize, canvasHeight, canvasWidth;
 
@@ -22,6 +27,10 @@ public class MyGdxGame extends ApplicationAdapter {
 		batch = new SpriteBatch();
 		img = new Texture("badlogic.jpg");
 		player = new Texture("bluesquare.jpg");
+
+		enemy = new Sprite(img);
+		me = new Sprite(player);
+
 		mySize = Math.max(player.getHeight(), player.getWidth());
 		canvasHeight = Gdx.graphics.getHeight();
 		canvasWidth = Gdx.graphics.getWidth();
@@ -32,17 +41,29 @@ public class MyGdxGame extends ApplicationAdapter {
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		updateEnemyXandY();
+		enemy.setX(x);
+		enemy.setY(y);
 		updateMyLocation();
+		me.setX(myX);
+		me.setY(myY);
 		batch.begin();
-		batch.draw(img, x, y);
-		batch.draw(player, myX, myY);
+		enemy.draw(batch);
+		me.draw(batch);
 		batch.end();
+
+		myArea = me.getBoundingRectangle();
+		enemyArea = enemy.getBoundingRectangle();
+
+		if (myArea.overlaps(enemyArea)) {
+			Gdx.app.log("Collision detected", myArea.toString());
+		}
 	}
 	
 	@Override
 	public void dispose () {
 		batch.dispose();
 		img.dispose();
+		player.dispose();
 	}
 
 	public void updateMyLocation() {
@@ -53,20 +74,21 @@ public class MyGdxGame extends ApplicationAdapter {
 		int multiplier = 20;
 
 		if (matrix.val[2] > 0) {
-			if (myY + mySize - (int) (Math.abs(matrix.val[2]) * multiplier) > 0)
-				myY = myY + (int) (Math.abs(matrix.val[2]) * multiplier);
-		} else {
-			if (myY - (int) (Math.abs(matrix.val[2]) * multiplier) + mySize < canvasHeight)
+			if (myY - (int) (Math.abs(matrix.val[2]) * multiplier) > 0)
 				myY = myY - (int) (Math.abs(matrix.val[2]) * multiplier);
+		} else {
+			if (myY + (int) (Math.abs(matrix.val[2]) * multiplier) + mySize < canvasHeight)
+				myY = myY + (int) (Math.abs(matrix.val[2]) * multiplier);
 		}
 
 		if (matrix.val[9] < 0) {
-			if (myX - (int) (Math.abs(matrix.val[9]) * multiplier) - mySize > 0)
+			if (myX - (int) (Math.abs(matrix.val[9]) * multiplier) > 0)
 				myX = myX - (int) (Math.abs(matrix.val[9]) * multiplier);
 		} else {
 			if (myX + (int) (Math.abs(matrix.val[9]) * multiplier) + mySize < canvasWidth)
 				myX = myX + (int) (Math.abs(matrix.val[9]) * multiplier);
 		}
+
 	}
 
 	private void updateEnemyXandY() {
